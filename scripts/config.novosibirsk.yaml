@@ -1,0 +1,38 @@
+# дефолтный прогон конвейера: только г. Новосибирск, 30-150 тыс., оба закона
+# вызов: python gosplan_scanner.py -c config.novosibirsk.yaml --collect 20
+
+base_url: https://v2test.gosplan.info
+api_key: null
+
+sources:
+  - fz44
+  - fz223
+
+filters:
+  keywords: []
+  keywords_all: false
+  okpd2: []
+  min_budget: 30000
+  max_budget: 150000
+  published_after: null
+  published_before: null
+  regions: [54]          # серверного фильтра «город» у API нет; 54 = область, грубая рамка
+  # точная проверка города — клиентски по месту поставки (GAR/ОКТМО закупки):
+  # только г. Новосибирск; «Новосибирской области»/«Новосибирский р-н» недостаточно
+  delivery_cities: ["Новосибирск"]
+  stage: 1               # только идёт приём заявок
+  currency: RUB
+  # только запрос котировок и аукцион; имена типов — из swagger gosplan.info
+  purchase_types:
+    fz44: [epNotificationEZK2020, epNotificationEF2020]
+    fz223: [purchaseNoticeZK, purchaseNoticeZKESMBO, purchaseNoticeAE, purchaseNoticeAESMBO, purchaseNoticeOA]
+
+limits:
+  page_size: 100
+  max_pages_per_source: 50
+  pause_ms: 0            # паузы не нужны: троттлинг 10 req/min стоит в http-слое (gosplan_lib)
+  timeout_sec: 60
+
+output:
+  dir: tenders
+  keep_days: 90
