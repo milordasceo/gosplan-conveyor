@@ -8,6 +8,25 @@ sources:                                 # какие выборки опраш�
   - fz44                                 # /fz44/purchases
   - fz223                                # /fz223/purchases
 
+# пример / значение по умолчанию для --kind (раскомментируй целиком).
+# без этого блока --kind завершается с ошибкой.
+# purchase_kinds:
+#   auction:   # аукцион
+#     fz44: [epNotificationEF2020]
+#     fz223: [purchaseNoticeAE, purchaseNoticeAESMBO, purchaseNoticeOA, purchaseNoticeAE94FZ]
+#   zk:        # запрос котировок
+#     fz44: [epNotificationEZK2020, epNotificationEZK]
+#     fz223: [purchaseNoticeZK, purchaseNoticeZKESMBO]
+#   ok:        # конкурс
+#     fz44: [epNotificationEOK2020, epNotificationEOK, epNotificationEOKD, epNotificationEOKOU]
+#     fz223: [purchaseNoticeOK, purchaseNoticeKESMBO]
+#   zp:        # запрос предложений
+#     fz44: [epNotificationEZP]
+#     fz223: [purchaseNoticeZPESMBO]
+#   ep:        # единственный поставщик
+#     fz44: []          # в api нет кода извещения о закупке у ед. поставщика по 44-фз
+#     fz223: [purchaseNoticeEP]
+
 filters:
   keywords: []                          # слова по наименованию объекта закупки (ищутся и на сервере, и повторно на клиенте)
   keywords_all: false                   # true = все слова обязательны; false = любое
@@ -16,9 +35,21 @@ filters:
   max_budget: null                      # верхняя граница, руб
   published_after: null                 # дата публикации "с", ISO 8601, напр. 2026-10-01T00:00:00+03:00
   published_before: null                # дата публикации "по"
+  since: today                          # то же, что --since: today или YYYY-MM-DD; перекрывается флагом
+  deadline_from: now                    # окончание подачи заявок с: now (момент запуска, москва), YYYY-MM-DD или iso
+  deadline_to: null                     # окончание подачи заявок по
+  kinds: []                             # виды, как --kind: auction, zk, ok, zp, ep. пусто = не сужать
+  types: []                             # законы 44 и/или 223; пусто = берётся sources
   regions: []                           # коды регионов KLADR, напр. [23, 77]
   stage: 1                              # 1 подача заявок | 2 работа комиссии | 3 завершена | 4 отменена
   currency: null                        # код валюты, напр. RUB
+
+run:
+  limit: 0                              # сколько выгрузить за прогон; 0 = без лимита. cli --limit важнее
+
+export:
+  dir: ""                               # непустое — режим выгрузки, путь от папки этого файла. --no-export отключает
+  city_strict: false                    # true = не писать закупки вне города
 
 limits:
   page_size: 100                        # максимум API = 100
@@ -27,5 +58,7 @@ limits:
   timeout_sec: 30
 
 output:
-  dir: tenders                          # каталог рядом со скриптом
+  dir: tenders                          # каталог относительно папки скрипта
   keep_days: 90                         # сколько прогона-отчётов хранить; 0 = не чистить
+
+# state_dir: cache                      # слот api; относительно этого файла. иначе папка скрипта или GOSPLAN_STATE_DIR
